@@ -1,0 +1,32 @@
+. git clone https://github.com/ghdl/ghdl.git
+. git clone https://github.com/gtkwave/gtkwave.git
+. mkdir ~/VhsicHdl
+. cd ~/VhsicHdl
+. sudo apt install libgtk-4-dev
+. sudo apt install git
+. git clone https://gitlab.gnome.org/GNOME/gtksourceview
+. sudo apt update
+. sudo apt install -y \
+  build-essential \
+  meson \
+  ninja-build \
+  libgtk-4-dev \
+  libglib2.0-dev \
+  libpango1.0-dev \
+  libxml2-dev \
+  libgirepository1.0-dev \
+  gettext \
+  gobject-introspection \
+  git
+. sudo git clone https://gitlab.gnome.org/GNOME/gtksourceview.git
+. cd gtksourceview
+. git config --global --add safe.directory /mnt/c/Users/O3841/VhsicHdl/gtksourceview
+. git checkout 5.10.0
+. which meson
+. which ninja
+. which g-ir-scanner
+. which glib-compile-resources
+. sudo meson setup builddir --prefix=/usr/local
+. sudo ninja -C builddir
+. sudo ninja -C builddir install
+. 

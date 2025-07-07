@@ -1,0 +1,95 @@
+Got it — since you're now going with **GtkSourceView 5**, you'll need to build it from source. Here’s a clean step-by-step guide to building and installing `libgtksourceview-5-dev` on **WSL (Ubuntu)**:
+
+---
+
+## ✅ STEP 1: Install Build Dependencies
+
+```bash
+sudo apt update
+sudo apt install -y \
+  build-essential \
+  meson \
+  ninja-build \
+  libgtk-4-dev \
+  libglib2.0-dev \
+  libpango1.0-dev \
+  libxml2-dev \
+  libgirepository1.0-dev \
+  gettext \
+  gobject-introspection \
+  git
+```
+
+---
+
+## ✅ STEP 2: Clone GtkSourceView
+
+```bash
+git clone https://gitlab.gnome.org/GNOME/gtksourceview.git
+cd gtksourceview
+```
+
+> If you want to pin a stable version:
+
+```bash
+git checkout 5.10.0
+```
+
+---
+
+## ✅ STEP 3: Build and Install
+
+```bash
+meson setup builddir --prefix=/usr
+ninja -C builddir
+sudo ninja -C builddir install
+```
+
+You now have `libgtksourceview-5` and its headers installed system-wide in `/usr/include/`.
+
+---
+
+## ✅ STEP 4: Verify Installation
+
+```bash
+pkg-config --modversion gtksourceview-5
+```
+
+Should output something like `5.10.0`.
+
+---
+
+## ✅ STEP 5: Update Your Rust Project
+
+### `Cargo.toml`:
+
+```toml
+[dependencies]
+gtk = { version = "0.7", package = "gtk4" }
+gtksourceview = { version = "0.7", package = "sourceview5" }
+gio = "0.17"
+glib = "0.17"
+```
+
+---
+
+## ✅ STEP 6: Make Sure `pkg-config` Works
+
+Before compiling Rust, export the environment to ensure GTK and GtkSourceView are detected:
+
+```bash
+export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig
+export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu
+```
+
+Or append them to `~/.bashrc` or `~/.profile`.
+
+Then run:
+
+```bash
+cargo build
+```
+
+---
+
+Would you like me to now regenerate your `main.rs` with a working GtkSourceView 5 example, including VHDL highlighting?
