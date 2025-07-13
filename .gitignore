@@ -2,9 +2,9 @@
 
 !.gitignore
 
-!frontend/**
+!frontend/
 !frontend/Cargo.toml
 
-!frontend/src/**
+!frontend/src/
 !frontend/src/main.rs
 !frontend/src/ghdl_runner.rs
