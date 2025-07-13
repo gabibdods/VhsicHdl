@@ -8,3 +8,6 @@
 !frontend/src/
 !frontend/src/main.rs
 !frontend/src/ghdl_runner.rs
+
+!*.ico
+!*.png
