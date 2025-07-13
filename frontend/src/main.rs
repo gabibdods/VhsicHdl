@@ -189,6 +189,7 @@ fn build_ui(app: &Application) {
         let tabs = tabs_rc.clone();
         let notebook = notebook_rc.clone();
         let output_buffer = output_buffer_rc.clone();
+        let entity_selector = entity_selector_rc.clone();
         simulate_action.connect_activate(move |_, _| {
             if let Some(page) = notebook.current_page() {
                 if let Some(tab) = tabs.borrow().get(page as usize) {
@@ -203,24 +204,26 @@ fn build_ui(app: &Application) {
                             }
                             Err(e) => eprintln!("Analyze failed: {e}"),
                         }
-                        let entity = path.file_stem().unwrap().to_str().unwrap();
-                        match ghdl_elaborate(entity) {
-                            Ok(output) => {
-                                let mut iter = output_buffer.end_iter();
-                                output_buffer.insert(&mut iter, ">>> ghdl -e output:\n");
-                                output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stdout));
-                                output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stderr));
+                        let selected = entity_selector.active_text().map(|s| s.to_string());
+                        if let Some(entity) = selected {
+                            match ghdl_elaborate(&*entity) {
+                                Ok(output) => {
+                                    let mut iter = output_buffer.end_iter();
+                                    output_buffer.insert(&mut iter, ">>> ghdl -e output:\n");
+                                    output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stdout));
+                                    output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stderr));
+                                }
+                                Err(e) => eprintln!("Elaboration failed: {e}"),
                             }
-                            Err(e) => eprintln!("Elaboration failed: {e}"),
-                        }
-                        match ghdl_run(entity, Some(Path::new("wave.vcd"))) {
-                            Ok(output) => {
-                                let mut iter = output_buffer.end_iter();
-                                output_buffer.insert(&mut iter, ">>> ghdl -r output:\n");
-                                output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stdout));
-                                output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stderr));
+                            match ghdl_run(&*entity, Some(Path::new("wave.vcd"))) {
+                                Ok(output) => {
+                                    let mut iter = output_buffer.end_iter();
+                                    output_buffer.insert(&mut iter, ">>> ghdl -r output:\n");
+                                    output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stdout));
+                                    output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stderr));
+                                }
+                                Err(e) => eprintln!("Simulation run failed: {e}"),
                             }
-                            Err(e) => eprintln!("Simulation run failed: {e}"),
                         }
                     }
                 }
