@@ -1,7 +1,10 @@
 *
 
+!.gitattributes
 !.gitignore
 !README.md
+!License/
+!License/*.md
 
 !frontend/
 !frontend/Cargo.toml
