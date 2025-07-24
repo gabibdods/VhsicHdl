@@ -1,10 +1,22 @@
+# https://github.com/gabibdods/NewRepositoryTemplate:
 *
 
 !.gitattributes
 !.gitignore
 !README.md
 !License/
-!License/*.md
+!License/LICENSE.md
+!License/NOTICE.md
+
+
+# particular repository ignores:
+
+!ico.ico
+!logo.ico
+!windows10.ico
+!ico.png
+!logo.png
+!windows10.png
 
 !frontend/
 !frontend/Cargo.toml
@@ -12,6 +24,3 @@
 !frontend/src/
 !frontend/src/main.rs
 !frontend/src/ghdl_runner.rs
-
-!*.ico
-!*.png
