@@ -11,12 +11,13 @@
 
 # particular repository ignores:
 
-!ico.ico
-!logo.ico
-!windows10.ico
-!ico.png
-!logo.png
-!windows10.png
+!build/
+!build/ico.ico
+!build/logo.ico
+!build/windows10.ico
+!build/ico.png
+!build/logo.png
+!build/windows10.png
 
 !frontend/
 !frontend/Cargo.toml
