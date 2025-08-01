@@ -8,6 +8,7 @@ use gtksourceview::{Buffer, LanguageManager, View};
 use std::{cell::RefCell, fs, path::PathBuf};
 use std::rc::Rc;
 use std::path::Path;
+use std::process::Command;
 
 struct TabData {
     buffer: Buffer,
@@ -23,10 +24,17 @@ fn main() {
     app.connect_activate(build_ui);
     app.run();
 }
-
 fn build_ui(app: &Application) {
     let notebook = gtk::Notebook::new();
     notebook.set_tab_pos(gtk::PositionType::Top);
+
+    let entity_selector = gtk::ComboBoxText::new();
+    entity_selector.set_hexpand(true);
+
+    let entity_box = Box::new(Orientation::Horizontal, 6);
+    let label = gtk::Label::new(Some("Top-Level Entity:"));
+    entity_box.append(&label);
+    entity_box.append(&entity_selector);
 
     let output_buffer = gtk::TextBuffer::new(None);
     let output_view = gtk::TextView::with_buffer(&output_buffer);
@@ -61,7 +69,6 @@ fn build_ui(app: &Application) {
     if let Some(vhdl_lang) = lang_manager.language("vhdl") {
         buffer.set_language(Some(&vhdl_lang));
     }
-
     let view = View::with_buffer(&buffer);
     view.set_show_line_numbers(true);
     view.set_highlight_current_line(true);
@@ -215,14 +222,25 @@ fn build_ui(app: &Application) {
                                 }
                                 Err(e) => eprintln!("Elaboration failed: {e}"),
                             }
-                            match ghdl_run(&*entity, Some(Path::new("wave.vcd"))) {
+                            match ghdl_run(&entity, Some(Path::new("wave.vcd"))) {
                                 Ok(output) => {
                                     let mut iter = output_buffer.end_iter();
                                     output_buffer.insert(&mut iter, ">>> ghdl -r output:\n");
-                                    output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stdout));
-                                    output_buffer.insert(&mut output_buffer.end_iter(), &String::from_utf8_lossy(&output.stderr));
+                                    output_buffer.insert(&mut iter, &String::from_utf8_lossy(&output.stdout));
+                                    output_buffer.insert(&mut iter, &String::from_utf8_lossy(&output.stderr));
+
+                                    if let Err(e) = Command::new("gtkwave").arg("wave.vcd").spawn() {
+                                        let mut iter = output_buffer.end_iter();
+                                        output_buffer.insert(&mut iter, &format!("Error launching GTKWave: {}\n", e));
+                                    } else {
+                                        let mut iter = output_buffer.end_iter();
+                                        output_buffer.insert(&mut iter, "Launched GTKWave!\n");
+                                    }
                                 }
-                                Err(e) => eprintln!("Simulation run failed: {e}"),
+                                Err(e) => {
+                                    let mut iter = output_buffer.end_iter();
+                                    output_buffer.insert(&mut iter, &format!("Simulation run failed: {e}\n"));
+                                }
                             }
                         }
                     }
@@ -255,19 +273,17 @@ fn build_ui(app: &Application) {
     let layout = Box::new(Orientation::Vertical, 0);
     layout.append(&menubar);
     layout.append(&notebook);
-    layout.append(&output_scroll);
     layout.append(&entity_box);
+    layout.append(&output_scroll);
 
     window.set_child(Some(&layout));
     window.present();
 }
-
 fn open_file_in_tab(notebook: &gtk::Notebook, path: &PathBuf, tabs: &TabList, entity_selector: &gtk::ComboBoxText) {
     let buffer = Buffer::new(None);
     if let Ok(content) = fs::read_to_string(path) {
         buffer.set_text(&content);
     }
-
     let view = View::with_buffer(&buffer);
     view.set_show_line_numbers(true);
     view.set_highlight_current_line(true);
@@ -292,7 +308,6 @@ fn open_file_in_tab(notebook: &gtk::Notebook, path: &PathBuf, tabs: &TabList, en
             entity_selector.append_text(&label);
         }
     }
-
     let file_name = path
         .file_name()
         .and_then(|n| n.to_str())
@@ -306,7 +321,6 @@ fn open_file_in_tab(notebook: &gtk::Notebook, path: &PathBuf, tabs: &TabList, en
         file_path: Some(path.clone())
     });
 }
-
 fn detect_entities(text: &str) -> Vec<String> {
     let mut entities = Vec::new();
     for line in text.lines() {
@@ -318,7 +332,6 @@ fn detect_entities(text: &str) -> Vec<String> {
     }
     entities
 }
-
 fn is_testbench(text: &str) -> bool {
     text.contains("std.env.stop") || text.contains("assert") || text.contains("wait") || text.contains("report")
 }
