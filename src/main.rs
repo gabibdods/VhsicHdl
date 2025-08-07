@@ -9,6 +9,10 @@ use std::{cell::RefCell, fs, path::PathBuf};
 use std::rc::Rc;
 use std::path::Path;
 use std::process::Command;
+use tray_item::TrayItem;
+use glib::object::SendWeakRef;
+use glib::source::idle_add;
+use glib::ControlFlow;
 
 struct TabData {
     buffer: Buffer,
@@ -278,6 +282,8 @@ fn build_ui(app: &Application) {
 
     window.set_child(Some(&layout));
     window.present();
+
+    setup_tray(&window);
 }
 fn open_file_in_tab(notebook: &gtk::Notebook, path: &PathBuf, tabs: &TabList, entity_selector: &gtk::ComboBoxText) {
     let buffer = Buffer::new(None);
@@ -334,4 +340,57 @@ fn detect_entities(text: &str) -> Vec<String> {
 }
 fn is_testbench(text: &str) -> bool {
     text.contains("std.env.stop") || text.contains("assert") || text.contains("wait") || text.contains("report")
+}
+fn setup_tray(window: &ApplicationWindow) {
+    let weak_window: SendWeakRef<ApplicationWindow> = window.downgrade().into();
+
+    let mut tray = match TrayItem::new("VhsicHdl", "./logo.ico") {
+        Ok(t) => t,
+        Err(e) => {
+            eprintln!("Tray initialization failed: {e}");
+            return;
+        }
+    };
+    {
+        let weak_ref = weak_window.clone();
+        if let Err(e) = tray.add_menu_item("Minimize", move || {
+            let weak = weak_ref.clone();
+            idle_add(move || {
+                if let Some(win) = weak.upgrade() {
+                    if win.is_visible() {
+                        win.hide();
+                    } else {
+                        win.show();
+                        win.present();
+                    }
+                }
+                ControlFlow::Break
+            });
+        }) {
+            eprintln!("Tray Minimize addition failed: {e}");
+        }
+    }
+    {
+        let weak_ref = weak_window.clone();
+        if let Err(e) = tray.add_menu_item("Fullscreen", move || {
+            let weak = weak_ref.clone();
+            idle_add(move || {
+                if let Some(win) = weak.upgrade() {
+                    if win.is_fullscreen() {
+                        win.unfullscreen();
+                    } else {
+                        win.fullscreen();
+                    }
+                }
+                ControlFlow::Break
+            });
+        }) {
+            eprintln!("Tray Fullscreen addition failed: {e}");
+        }
+    }
+    if let Err(e) = tray.add_menu_item("Close", move || {
+        std::process::exit(0);
+    }) {
+        eprintln!("Tray Close update failed: {e}");
+    }
 }

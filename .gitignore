@@ -16,17 +16,11 @@
 
 # particular repository ignores:
 
-!build/
-!build/ico.ico
-!build/logo.ico
-!build/windows10.ico
-!build/ico.png
-!build/logo.png
-!build/windows10.png
+!Cargo.toml
 
-!frontend/
-!frontend/Cargo.toml
-
-!frontend/src/
-!frontend/src/main.rs
-!frontend/src/ghdl_runner.rs
+!src/
+!src/main.rs
+!src/ghdl_runner.rs
+!src/ico.ico
+!src/logo.ico
+!src/windows10.ico
