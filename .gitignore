@@ -1,4 +1,4 @@
-# https://github.com/gabibdods/NewRepositoryTemplate:
+# https://github.com/gabibdods/NewRepo:
 *
 
 !.gitattributes
@@ -17,6 +17,7 @@
 # particular repository ignores:
 
 !Cargo.toml
+!pacman.sh
 
 !src/
 !src/main.rs

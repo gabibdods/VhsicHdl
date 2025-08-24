@@ -1,12 +1,9 @@
 [package]
 name = "vhsichdl"
 version = "0.1.0"
-edition = "2024"
+edition = "2025"
 
 [dependencies]
 gtk = { version = "0.9.7", package = "gtk4", features = ["v4_8"] }
 gtksourceview = { version = "0.9.1", package = "sourceview5" }
-glib = "0.20.12"
 gio = "0.20.12"
-tray-item = "0.6"
-ksni = { version = "0.3", features = ["blocking"] }
